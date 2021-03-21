@@ -1,7 +1,7 @@
 # reddit riddle bot
 # Frank Cline
 
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 import smtplib
 
@@ -27,9 +27,11 @@ def get_html(url):
 	returns: html object or None
 	"""
 	try:
-		html = urlopen(url)
+		headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+		request = Request(url=url, headers=headers)
+		html = urlopen(request)
 		return html
-	except HTTPError as e:
+	except Exception as e:
 		print(e) 
 
 def make_riddle_from_soup(soup):
@@ -57,8 +59,13 @@ def get_riddle():
 	returns: Riddle object with the question and answer from a 
 			 riddle from goodriddlesnow.com
 	"""
-	url = "http://goodriddlesnow.com/riddles/random"
+	url = "https://goodriddlesnow.com/riddles/random"
 
 	soup = make_soup(url)
 	riddle = make_riddle_from_soup(soup)
 	return riddle
+
+
+if __name__ == '__main__':
+	riddle = get_riddle()
+	print(f'{riddle.question}\n\n{riddle.answer}')
