@@ -19,6 +19,7 @@ from web_scrapers import FactScraper
 
 from web_scrapers.fact_scraper import FactScraper
 from web_scrapers.riddle_scraper import RiddleScraper
+from web_scrapers.saucy_insult_scraper import SaucyInsultScraper
 
 
 logging.basicConfig(level=logging.INFO,
@@ -41,6 +42,9 @@ class Bot(commands.Bot):
         self.DELAY_TIME = 30
         self.riddle_scraper = RiddleScraper()
         self.fact_scraper = FactScraper()
+        self.saucy_scraper = SaucyInsultScraper()
+        self.rival = 'franklysilly'
+        self.insult = True
 
     def get_author_prefix(self, message):
         user_prefix = ''
@@ -59,17 +63,24 @@ class Bot(commands.Bot):
     async def event_command_error(self, ctx, error):
         self.log.error(
             f'Error running command: {error} for {ctx.message.author.name}')
+        # TODO: Fix this so it works with Nightbot and other commands I don't know...
+        # message = f"Sorry {ctx.author.name}, I don't know that command! Maybe in the future, I can add your command."
+        # await ctx.send(message)
 
     async def event_message(self, message):
         user_prefix = self.get_author_prefix(message)
         self.log.info(
             f'#{message.channel} - {user_prefix}{message.author.name} - {message.content}')
 
-        if message.author.name.lower() != self.nick.lower():
+        if message.author.name.lower() == self.rival and self.insult:
+            self.insult = False
+            await self.insult_rival(message)
+        elif message.author.name.lower() != self.nick.lower():
+            self.insult = True
             await self.handle_commands(message)
 
     @commands.command(name='fact')
-    async def test_command(self, ctx):
+    async def fact_command(self, ctx):
         fact = self.fact_scraper.scrape()
         await ctx.send(fact.description)
 
@@ -81,6 +92,12 @@ class Bot(commands.Bot):
                 riddle = self.riddle_scraper.scrape()
 
             await self.sendRiddle(ctx, riddle)
+
+    async def insult_rival(self, ctx):
+        insult = self.saucy_scraper.scrape()
+        message = f"Silence {self.rival}! {insult}"
+        print(dir(ctx))
+        await ctx.channel.send(message)
 
     async def sendRiddle(self, ctx, riddle):
         self.waiting_to_answer = True
