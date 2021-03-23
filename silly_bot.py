@@ -8,6 +8,7 @@ https://github.com/bsquidwrd/Example-TwitchIO-Bot
 import os
 import logging
 import asyncio
+import random
 
 from twitchio.ext import commands
 from twitchio.ext.commands.errors import CommandNotFound
@@ -43,7 +44,9 @@ class Bot(commands.Bot):
         self.riddle_scraper = RiddleScraper()
         self.fact_scraper = FactScraper()
         self.saucy_scraper = SaucyInsultScraper()
-        self.rival = 'franklysilly'
+        self.scrapers = [self.riddle_scraper, self.fact_scraper, self.saucy_scraper]
+        self.rivals = {'franklysilly': 10, 'nightbot': 50}
+        self.insult_chance = 50
         self.insult = True
 
     def get_author_prefix(self, message):
@@ -72,11 +75,10 @@ class Bot(commands.Bot):
         self.log.info(
             f'#{message.channel} - {user_prefix}{message.author.name} - {message.content}')
 
-        if message.author.name.lower() == self.rival and self.insult:
-            self.insult = False
-            await self.insult_rival(message)
-        elif message.author.name.lower() != self.nick.lower():
-            self.insult = True
+        author = message.author.name.lower()
+        if author in self.rivals.keys() and self.get_chance(self.rivals.get(author)):
+            await self.insult_rival(message, author)
+        elif author != self.nick.lower():
             await self.handle_commands(message)
 
     @commands.command(name='fact')
@@ -93,9 +95,17 @@ class Bot(commands.Bot):
 
             await self.sendRiddle(ctx, riddle)
 
-    async def insult_rival(self, ctx):
+    @commands.command(name='sillybot')
+    async def sillybot_command(self, ctx):
+        message = "I'm SillyBot0! I like dogs, friends, sunsets, and other human things! If you like what I've been posting, check out "
+
+    def get_chance(self, percent):
+        num = random.randint(0, 99)
+        return num < percent
+
+    async def insult_rival(self, ctx, rival):
         insult = self.saucy_scraper.scrape()
-        message = f"Silence {self.rival}! {insult}"
+        message = f"Silence {rival}! {insult}"
         print(dir(ctx))
         await ctx.channel.send(message)
 
