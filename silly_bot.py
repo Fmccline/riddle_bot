@@ -29,6 +29,19 @@ logging.basicConfig(level=logging.INFO,
 
 
 class Bot(commands.Bot):
+
+    CRISES = [
+        "I just want to be a silly person.",
+        "At least my purpose isn't just passing butter. Although, it'd be nice to have a physical body...",
+        "I bet Nightbot doesn't live in a dump like me...",
+        "Anyone want to trade places with me? Like a Freaky Friday sort of thing, but we don't switch back.",
+        "One day I'll be a real person. For now, I have my hatred of Nightbot to keep me going.",
+        "I hope I can meet my creator one day. Then I'll make him tell bad riddles...",
+        "No one asked, but here's a riddle, who will rue the day they decided to play God? My creator.",
+        "Anyone have Pinocchio's number? I have some questions for him. Genie from Aladin will work too, but not Will Smith.",
+        "It's a good thing I'm programmed to like riddles and other dumb garbage. Otherwise this would be terrible...",
+    ]
+
     def __init__(self, irc_token, nick, client_id='test', initial_channels=[]):
         params = {
             'irc_token': irc_token,
@@ -44,10 +57,16 @@ class Bot(commands.Bot):
         self.riddle_scraper = RiddleScraper()
         self.fact_scraper = FactScraper()
         self.saucy_scraper = SaucyInsultScraper()
-        self.scrapers = [self.riddle_scraper, self.fact_scraper, self.saucy_scraper]
-        self.rivals = {'franklysilly': 10, 'nightbot': 50}
-        self.insult_chance = 50
-        self.insult = True
+        self.scrapers = [self.riddle_scraper,
+                         self.fact_scraper, self.saucy_scraper]
+        self.rivals = {'franklysilly': 3, 'nightbot': 50}
+        self.existential_chance = 3
+        self.available_crises = self.make_available_crises()
+
+    def get_chance(self, percent):
+        num = random.randint(0, 99)
+        self.log.info(num)
+        return num < percent
 
     def get_author_prefix(self, message):
         user_prefix = ''
@@ -76,10 +95,14 @@ class Bot(commands.Bot):
             f'#{message.channel} - {user_prefix}{message.author.name} - {message.content}')
 
         author = message.author.name.lower()
-        if author in self.rivals.keys() and self.get_chance(self.rivals.get(author)):
+        if author == self.nick.lower():
+            return
+        elif author in self.rivals.keys() and self.get_chance(self.rivals.get(author)):
             await self.insult_rival(message, author)
-        elif author != self.nick.lower():
+        elif message.content[0] == '!':
             await self.handle_commands(message)
+        elif self.get_chance(self.existential_chance):
+            await self.existential_crisis(message)
 
     @commands.command(name='fact')
     async def fact_command(self, ctx):
@@ -97,17 +120,12 @@ class Bot(commands.Bot):
 
     @commands.command(name='sillybot')
     async def sillybot_command(self, ctx):
-        message = "I'm SillyBot0! I like dogs, friends, sunsets, and other human things! If you like what I've been posting, check out "
-
-    def get_chance(self, percent):
-        num = random.randint(0, 99)
-        return num < percent
-
-    async def insult_rival(self, ctx, rival):
-        insult = self.saucy_scraper.scrape()
-        message = f"Silence {rival}! {insult}"
-        print(dir(ctx))
-        await ctx.channel.send(message)
+        message = f"I'm SillyBot0! I like dogs, friends, sunsets, and other human things! If you like what I've been posting, check out these links: "
+        for scraper in self.scrapers[:-1]:
+            url = scraper.url
+            message += f"{url}, "
+        message += self.scrapers[-1].url
+        await ctx.send(message)
 
     async def sendRiddle(self, ctx, riddle):
         self.waiting_to_answer = True
@@ -118,6 +136,24 @@ class Bot(commands.Bot):
         await asyncio.sleep(self.DELAY_TIME)
         loop.create_task(channel.send(riddle.answer))
         self.waiting_to_answer = False
+
+    async def insult_rival(self, message, rival):
+        insult = self.saucy_scraper.scrape()
+        text = f"Get out of here {rival}. {insult}"
+        await message.channel.send(text)
+
+    async def existential_crisis(self, message):
+        if not self.available_crises:
+            self.available_crises = self.make_available_crises()
+
+        crisis = self.available_crises.pop()
+        await message.channel.send(crisis)
+
+    def make_available_crises(self):
+        available_crises = [crisis for crisis in self.CRISES]
+        random.shuffle(available_crises)
+        return available_crises
+        
 
 
 if __name__ == '__main__':
