@@ -1,6 +1,7 @@
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 from .web_scraper import WebScraper
+import re
 
 
 class Riddle:
@@ -55,20 +56,21 @@ class RiddleScraper(WebScraper):
         """
         question = ""
         answer = ""
-        for tag in soup.find_all('p'):
-            if str(tag.contents[0].string) == "Question: ":
-                question += str(tag.contents[1].string)
-            if str(tag.contents[0].string) == "Answer: ":
-                answer += str(tag.contents[1].string)
-        if question == "" or answer == "":
-            print("Question or Answer not found.")
-            raise RuntimeError
-        else:
-            return Riddle(question, answer)
+        try:
+            question = soup.find('div', {"class": "riddle-question"}).find('p').text
+            answer = soup.find('div', {"class": "riddle-answer hide print-show"}).find('p').text
 
+            question = self.format_text(question)
+            answer = self.format_text(answer)
+        except Exception as e:
+            print(e)
+            question = "Who couldn't find a riddle?"
+            answer = "Me :{"
 
-if __name__ == '__main__':
-    riddle_scraper = RiddleScraper()
-    riddle = riddle_scraper.scrape()
-    print(riddle.question)
-    print(riddle.answer)
+        return Riddle(question, answer)
+
+    def format_text(self, text):
+        text = re.sub(r"\.", ". ", text)
+        text = re.sub(r"\s\.\s", ".", text)        
+        text = re.sub(r"\s\s+", " ", text)
+        return text

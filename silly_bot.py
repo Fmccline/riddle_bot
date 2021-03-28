@@ -5,7 +5,6 @@ https://github.com/TwitchIO/TwitchIOv
 https://github.com/bsquidwrd/Example-TwitchIO-Bot
 """
 
-import os
 import logging
 import asyncio
 import random
@@ -157,11 +156,11 @@ class Bot(commands.Bot):
 
 
 if __name__ == '__main__':
-    nick = os.environ[Env.BOT_NICK]
-    irc_token = os.environ[Env.BOT_TOKEN]
-    client_id = os.getenv(Env.CLIENT_ID, None)
+    nick = Env.BOT_NICK
+    irc_token = Env.BOT_TOKEN
+    client_id = Env.CLIENT_ID
 
-    initial_channels = [os.environ[Env.CHANNEL], nick]
+    channels = Env.CHANNELS
     bot = Bot(irc_token=irc_token, client_id=client_id,
-              nick=nick, initial_channels=initial_channels)
+              nick=nick, initial_channels=channels)
     bot.run()
