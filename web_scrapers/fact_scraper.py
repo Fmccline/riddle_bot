@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .web_scraper import WebScraper
+from .selenium_driver import SeleniumDriver
 
 
 class Fact:
@@ -23,12 +24,7 @@ class FactScraper(WebScraper):
         super().__init__(self.URL)
 
     def scrape(self):
-        options = se.webdriver.ChromeOptions()
-        options.add_argument('headless')
-
-        driver = se.webdriver.Chrome(
-            executable_path="C:/Users/Frank's Laptop/Desktop/Programming/Python/riddle_bot/web_scrapers/chromedriver", chrome_options=options)
-
+        driver = SeleniumDriver.make_driver()
         delay = 3  # seconds
         description = "0"*500
         tries = 0

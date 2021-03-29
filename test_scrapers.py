@@ -15,13 +15,16 @@ def riddle_scraper_test():
 
 
 def test_all():
-    scrapers = [FactScraper(), RiddleScraper(), SaucyInsultScraper()]
     scrapers = []
     scrapers.append(FactScraper())
     scrapers.append(RiddleScraper())
     scrapers.append(SaucyInsultScraper())
+    results = []
     for scraper in scrapers:
-        print(scraper.scrape())
+        results.append(str(scraper.scrape()))
+    
+    for result in results:
+        print(f'\n{result}')
 
 
 if __name__ == '__main__':
