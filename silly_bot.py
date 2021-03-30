@@ -58,7 +58,7 @@ class Bot(commands.Bot):
         self.saucy_scraper = SaucyInsultScraper()
         self.scrapers = [self.riddle_scraper,
                          self.fact_scraper, self.saucy_scraper]
-        self.rivals = {'franklysilly': 50, 'nightbot': 50}
+        self.rivals = {'franklysilly': 3, 'nightbot': 50}
         self.existential_chance = 3
         self.available_crises = self.make_available_crises()
 
