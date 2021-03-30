@@ -58,9 +58,16 @@ class Bot(commands.Bot):
         self.saucy_scraper = SaucyInsultScraper()
         self.scrapers = [self.riddle_scraper,
                          self.fact_scraper, self.saucy_scraper]
-        self.rivals = {'franklysilly': 3, 'nightbot': 50}
+        self.rivals = {'franklysilly': 50, 'nightbot': 50}
         self.existential_chance = 3
         self.available_crises = self.make_available_crises()
+        self.test_scrapers()
+
+    def test_scrapers(self):
+        self.log.info('******** Testing webs scrapers ********')
+        for scrapers in self.scrapers:
+            self.log.info(scrapers.scrape())
+        self.log.info('***** Finished testing web scrapers *****')
 
     def get_chance(self, percent):
         num = random.randint(0, 99)
@@ -152,7 +159,6 @@ class Bot(commands.Bot):
         available_crises = [crisis for crisis in self.CRISES]
         random.shuffle(available_crises)
         return available_crises
-        
 
 
 if __name__ == '__main__':
@@ -163,4 +169,5 @@ if __name__ == '__main__':
     channels = Env.CHANNELS
     bot = Bot(irc_token=irc_token, client_id=client_id,
               nick=nick, initial_channels=channels)
+
     bot.run()

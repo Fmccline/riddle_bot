@@ -22,23 +22,22 @@ class FactScraper(WebScraper):
 
     def __init__(self):
         super().__init__(self.URL)
+        self.driver = SeleniumDriver.make_driver()
 
     def scrape(self):
-        driver = SeleniumDriver.make_driver()
         delay = 3  # seconds
         description = "0"*500
         tries = 0
         while len(description) >= 450 and tries < 3:
             try:
-                driver.get(self.url)
-                factElem = WebDriverWait(driver, delay).until(
+                self.driver.get(self.url)
+                factElem = WebDriverWait(self.driver, delay).until(
                     EC.presence_of_element_located((By.CLASS_NAME, self.DIV_ID)))
                 description = f"Fun fact: {factElem.text}"
             except Exception:
                 description = "Sorry, I ran into an unexpected error while getting you a fact!"
             finally:
                 tries += 1
-        driver.close()
         return Fact(description)
 
 
