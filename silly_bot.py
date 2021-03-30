@@ -61,7 +61,6 @@ class Bot(commands.Bot):
         self.rivals = {'franklysilly': 50, 'nightbot': 50}
         self.existential_chance = 3
         self.available_crises = self.make_available_crises()
-        self.test_scrapers()
 
     def test_scrapers(self):
         self.log.info('******** Testing webs scrapers ********')
@@ -169,5 +168,5 @@ if __name__ == '__main__':
     channels = Env.CHANNELS
     bot = Bot(irc_token=irc_token, client_id=client_id,
               nick=nick, initial_channels=channels)
-
+    bot.test_scrapers()
     bot.run()

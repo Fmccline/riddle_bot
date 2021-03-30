@@ -57,5 +57,5 @@ def time_scrapers():
 
 if __name__ == '__main__':
     # test_all()
-    # test_riddle_scraper()
-    time_scrapers()
+    test_riddle_scraper()
+    # time_scrapers()

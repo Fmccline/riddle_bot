@@ -56,6 +56,7 @@ class RiddleScraper(WebScraper):
         """
         question = ""
         answer = ""
+        riddle = None
         try:
             question = soup.find('div', {"class": "riddle-question"}).find('p').text
             answer = soup.find('div', {"class": "riddle-answer hide print-show"}).find('p').text
@@ -67,10 +68,26 @@ class RiddleScraper(WebScraper):
             question = "Who couldn't find a riddle?"
             answer = "Me :{"
 
-        return Riddle(question, answer)
+        riddle = Riddle(question, answer)
+        if self.needs_censoring(riddle):
+            return self.scrape()
+        else:
+            return riddle
 
     def format_text(self, text):
         text = re.sub(r"\.", ". ", text)
         text = re.sub(r"\s\.\s", ".", text)        
         text = re.sub(r"\s\s+", " ", text)
         return text
+
+    def needs_censoring(self, riddle):
+        texts = [riddle.question, riddle.answer]
+        for text in texts:
+            if re.search(r"black (man|woman)", text.lower()) is not None or text.lower() == 'a woman':
+                print('*********************************')
+                print('CENSORING RIDDLE')
+                print(riddle.question)
+                print(riddle.answer)
+                print('*********************************')                
+                return True
+        return False
