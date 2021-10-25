@@ -11,15 +11,18 @@ import random
 
 from twitchio.ext import commands
 from twitchio.ext.commands.errors import CommandNotFound
+from cogs.fact_cog import FactCog
+from cogs.hello_cog import HelloCog
 
 import environment
 from environment import Env
 from web_scrapers import RiddleScraper
-from web_scrapers import FactScraper
 
-from web_scrapers.fact_scraper import FactScraper
 from web_scrapers.riddle_scraper import RiddleScraper
 from web_scrapers.saucy_insult_scraper import SaucyInsultScraper
+
+from cogs.hello_cog import HelloCog
+from cogs.fact_cog import FactCog
 
 
 logging.basicConfig(level=logging.INFO,
@@ -54,13 +57,13 @@ class Bot(commands.Bot):
         self.waiting_to_answer = False
         self.DELAY_TIME = 30
         self.riddle_scraper = RiddleScraper()
-        self.fact_scraper = FactScraper()
         self.saucy_scraper = SaucyInsultScraper()
-        self.scrapers = [self.riddle_scraper,
-                         self.fact_scraper, self.saucy_scraper]
+        self.scrapers = [self.riddle_scraper, self.saucy_scraper]
         self.rivals = {'franklysilly': 3, 'nightbot': 50}
-        self.existential_chance = 3
+        self.existential_chance = 0
         self.available_crises = self.make_available_crises()
+        self.add_cog(HelloCog(self))
+        self.add_cog(FactCog(self))
 
     def test_scrapers(self):
         self.log.info('******** Testing webs scrapers ********')
@@ -108,11 +111,6 @@ class Bot(commands.Bot):
             await self.handle_commands(message)
         elif self.get_chance(self.existential_chance):
             await self.existential_crisis(message)
-
-    @commands.command(name='fact')
-    async def fact_command(self, ctx):
-        fact = self.fact_scraper.scrape()
-        await ctx.send(fact.description)
 
     @commands.command(name='riddle')
     async def riddle_command(self, ctx):
@@ -168,5 +166,5 @@ if __name__ == '__main__':
     channels = Env.CHANNELS
     bot = Bot(irc_token=irc_token, client_id=client_id,
               nick=nick, initial_channels=channels)
-    bot.test_scrapers()
+    # bot.test_scrapers()
     bot.run()
