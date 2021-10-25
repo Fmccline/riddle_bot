@@ -11,18 +11,12 @@ import random
 
 from twitchio.ext import commands
 from twitchio.ext.commands.errors import CommandNotFound
-from cogs.fact_cog import FactCog
-from cogs.hello_cog import HelloCog
 
-import environment
+from cogs.fact_cog import FactCog
+from cogs.riddle_cog import RiddleCog
 from environment import Env
-from web_scrapers import RiddleScraper
 
-from web_scrapers.riddle_scraper import RiddleScraper
 from web_scrapers.saucy_insult_scraper import SaucyInsultScraper
-
-from cogs.hello_cog import HelloCog
-from cogs.fact_cog import FactCog
 
 
 logging.basicConfig(level=logging.INFO,
@@ -54,16 +48,13 @@ class Bot(commands.Bot):
         }
         super().__init__(**params)
         self.log = logging
-        self.waiting_to_answer = False
-        self.DELAY_TIME = 30
-        self.riddle_scraper = RiddleScraper()
         self.saucy_scraper = SaucyInsultScraper()
-        self.scrapers = [self.riddle_scraper, self.saucy_scraper]
+        self.scrapers = [self.saucy_scraper]
         self.rivals = {'franklysilly': 3, 'nightbot': 50}
         self.existential_chance = 0
         self.available_crises = self.make_available_crises()
-        self.add_cog(HelloCog(self))
         self.add_cog(FactCog(self))
+        self.add_cog(RiddleCog(self))
 
     def test_scrapers(self):
         self.log.info('******** Testing webs scrapers ********')
@@ -112,15 +103,6 @@ class Bot(commands.Bot):
         elif self.get_chance(self.existential_chance):
             await self.existential_crisis(message)
 
-    @commands.command(name='riddle')
-    async def riddle_command(self, ctx):
-        if not self.waiting_to_answer:
-            riddle = None
-            while riddle is None or len(riddle.question) > 140 or len(riddle.answer) > 140:
-                riddle = self.riddle_scraper.scrape()
-
-            await self.sendRiddle(ctx, riddle)
-
     @commands.command(name='sillybot')
     async def sillybot_command(self, ctx):
         message = f"I'm SillyBot0! I like dogs, friends, sunsets, and other human things! If you like what I've been posting, check out these links: "
@@ -129,16 +111,6 @@ class Bot(commands.Bot):
             message += f"{url}, "
         message += self.scrapers[-1].url
         await ctx.send(message)
-
-    async def sendRiddle(self, ctx, riddle):
-        self.waiting_to_answer = True
-        channel = ctx.channel
-        loop = asyncio.get_event_loop()
-        loop.create_task(channel.send(
-            riddle.question + f" (I will give the answer in {self.DELAY_TIME} seconds!)"))
-        await asyncio.sleep(self.DELAY_TIME)
-        loop.create_task(channel.send(riddle.answer))
-        self.waiting_to_answer = False
 
     async def insult_rival(self, message, rival):
         insult = self.saucy_scraper.scrape()
