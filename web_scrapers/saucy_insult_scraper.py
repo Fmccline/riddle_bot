@@ -1,5 +1,3 @@
-import selenium as se
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -35,5 +33,5 @@ class SaucyInsultScraper(WebScraper):
             insult = factElem.get_attribute('innerHTML')
         except Exception as e:
             print(e)
-            insult = "Sorry, there was an error while trying to get an insult."
+            insult = "I couldn't get an insult this time, but I'll get you next time. I swear..."
         return Insult(insult)

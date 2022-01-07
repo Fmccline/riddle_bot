@@ -2,8 +2,7 @@ import asyncio
 from twitchio.ext import commands
 from web_scrapers import RiddleScraper
 
-@commands.cog()
-class RiddleCog:
+class RiddleCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
